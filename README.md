@@ -15,11 +15,13 @@ code editor:
 
 1. Click on the menu item "Resources > Libraries..."
 2. In the "Find a Library" text box, enter the project key
-   "MswhXl8fVhTFUH_Q3UOJbXvxhMjh3Sh48" and click the "Select" button.
+   `MswhXl8fVhTFUH_Q3UOJbXvxhMjh3Sh48` and click the "Select" button.
 3. Choose a version in the dropdown box (usually best to pick the latest
    version).
 4. Click the "Save" button.
 
+Alternatively, you can copy and paste the files in the [`/dist`](dist) directory
+directly into your script project.
 
 ## Redirect URI
 
@@ -44,7 +46,7 @@ Using the library to generate an OAuth2 token has the following basic steps.
 ### 1. Create the OAuth2 service
 
 The OAuth2Service class contains the configuration information for a given
-OAuth2 provider, including it's endpoints, client IDs and secrets, etc. This
+OAuth2 provider, including its endpoints, client IDs and secrets, etc. This
 information is not persisted to any data store, so you'll need to create this
 object each time you want to use it. The example below shows how to create a
 service for the Google Drive API.
@@ -62,9 +64,6 @@ service for the Google Drive API.
           // Set the client ID and secret, from the Google Developers Console.
           .setClientId('...')
           .setClientSecret('...')
-
-          // Set the project key of the script using this library.
-          .setProjectKey('...')
 
           // Set the name of the callback function in the script referenced
           // above that should be invoked to complete the OAuth flow.
@@ -156,7 +155,7 @@ fix the problem yourself and make a pull request against the source code.
 
 ## Other features
 
-#### Resetting the Access Token
+#### Resetting the access token
 
 If you have an access token set and need to remove it from the property store
 you can remove it with the `reset()` function. Before you can call reset you
@@ -168,7 +167,7 @@ need to set the property store.
       .reset();
     }
 
-#### Setting the Token Format
+#### Setting the token format
 
 OAuth services can return a token in two ways: as JSON or an URL encoded
 string. You can set which format the token is in with
@@ -176,15 +175,31 @@ string. You can set which format the token is in with
 `TOKEN_FORMAT.FORM_URL_ENCODED` and `TOKEN_FORMAT.JSON`. JSON is set as default
 if no token format is chosen.
 
-    function gitService() {
-      return OAuth2.createService('git')
-       .setAuthorizationBaseUrl('https://github.com/login/oauth/authorize')
-       .setTokenUrl('https://github.com/login/oauth/access_token')
-       .setClientId('...')
-       .setClientSecret('...')
-       .setProjectKey('...')
-       .setCallbackFunction('authCallback')
-       .setPropertyStore(PropertiesService.getUserProperties())
-       .setScope('gist,repo,user')
-      .setTokenFormat(OAuth2.TOKEN_FORMAT.FORM_URL_ENCODED);
-    }
+#### Setting additional token headers
+
+Some services, such as the FitBit API, require you to set an Authorization
+header on access token requests. The `setTokenHeaders()` method allows you
+to pass in a JavaScript object of additional header key/value pairs to be used
+in these requests.
+
+    .setTokenHeaders({
+      'Authorization': 'Basic ' + Utilities.base64Encode(CLIENT_ID + ':' + CLIENT_SECRET)
+    });
+
+See the [FitBit sample](samples/FitBit.gs) for the compelte code.
+
+#### Service Accounts
+
+This library supports the service account authorization flow, also known as the
+[JSON Web Token (JWT) Profile](https://tools.ietf.org/html/draft-ietf-oauth-jwt-bearer-12).
+This is a two-legged OAuth flow that doesn't require a user to visit a URL and
+authorize access.
+
+One common use for service accounts with Google APIs is
+[domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority).
+This process allows a Google Apps for Work/EDU domain administrator to grant an
+application access to all the users within the domain. When the application
+wishes to access the resources of a particular user, it uses the service account
+authorization flow to obtain an access token. See the sample
+[`GoogleServiceAccount.gs`](samples/GoogleServiceAccount.gs) for more
+information.
